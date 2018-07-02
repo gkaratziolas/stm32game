@@ -50,37 +50,40 @@
   */
 int main(void)
 {
-  volatile uint32_t dlycnt;
+        volatile uint32_t dlycnt;
 
-  /*!< At this stage the microcontroller clock setting is already configured, 
-       this is done through SystemInit() function which is called from startup
-       file (startup_stm32f4xx.s) before to branch to application main.
-       To reconfigure the default setting of SystemInit() function, refer to
-       system_stm32f4xx.c file
-  */
+        /* 
+         * At this stage the microcontroller clock setting is already configured, 
+         * this is done through SystemInit() function which is called from startup
+         * file (startup_stm32f4xx.s) before to branch to application main.
+         * To reconfigure the default setting of SystemInit() function, refer to
+         * system_stm32f4xx.c file
+        */
 
-  /* wait the power stable */
-  for (dlycnt = 0; dlycnt < 10000000; dlycnt++);
+        /* wait the power stable */
+        for (dlycnt = 0; dlycnt < 10000000; dlycnt++);
 
-  STM32f4_Discovery_LCD_Init();
+        STM32f4_Discovery_LCD_Init();
 
-  /* Display message on stm32f4_discovery LCD **********************************/
-  /* Clear the LCD */ 
-  LCD_Clear(LCD_COLOR_WHITE);
+        /* Display message on stm32f4_discovery LCD **********************************/
+        /* Clear the LCD */ 
+        LCD_Clear(LCD_COLOR_BLACK);
 
-  /* Set the LCD Back Color */
-  LCD_SetBackColor(LCD_COLOR_BLUE);
-  /* Set the LCD Text Color */
-  LCD_SetTextColor(LCD_COLOR_WHITE);
-  LCD_DisplayStringLine(LINE(3), (uint8_t *)MESSAGE1);
-  LCD_DisplayStringLine(LINE(4), (uint8_t *)MESSAGE2);
-  LCD_DisplayStringLine(LINE(5), (uint8_t *)MESSAGE3);
-  /* wait for a moment */
-  for (dlycnt = 0; dlycnt < 50000000; dlycnt++);
+        uint16_t x_pos = 0;
+        uint16_t y_pos = 0;
+        uint8_t width  = 10;
+        uint8_t height = 10;
 
-  /* LCD RGB Test */
-  LCD_RGB_Test();
-  while (1);
+        while(1) {                
+                x_pos++;
+                y_pos++;
+                LCD_DrawFullRect(x_pos, y_pos, width, height);
+                for (dlycnt = 0; dlycnt < 500000; dlycnt++);
+        }
+
+        /* LCD RGB Test */
+        //LCD_RGB_Test();
+        while (1);
 }
 
 #ifdef  USE_FULL_ASSERT
@@ -94,13 +97,13 @@ int main(void)
   */
 void assert_failed(uint8_t* file, uint32_t line)
 { 
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-
-  /* Infinite loop */
-  while (1)
-  {
-  }
+        /* 
+         * User can add his own implementation to report the file name and line number,
+         * ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line)
+         */
+        while (1)
+        {
+        }
 }
 #endif
 
