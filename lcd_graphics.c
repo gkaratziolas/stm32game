@@ -325,6 +325,8 @@ void lcd_draw_sprite(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, 
         uint16_t x, y, i;
 
         for (y=0; y<height; y++) {
+                // TODO: Shouldn't need to be done twice. Glitches observed without repeat (due to timing?)
+                lcd_set_cursor(x0, y0+y);
                 lcd_set_cursor(x0, y0+y);
                 lcd_write_ram_prepare();
                 for (x=0; x<width; x++) {
