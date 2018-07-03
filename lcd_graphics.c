@@ -164,8 +164,6 @@ void lcd_fsmc_config(void) {
 
 
 void lcd_init(void) {
-        unsigned long ulCount;
-
         /* Configure the LCD Control pins */
         lcd_gpio_config();
         
@@ -239,9 +237,69 @@ void lcd_init(void) {
         lcd_write_reg(SSD2119_Y_RAM_ADDR_REG, 0x00);
   
         /* clear the lcd  */
+        unsigned long ulCount;
         lcd_write_reg(SSD2119_RAM_DATA_REG, 0x0000);
         for(ulCount = 0; ulCount < (LCD_PIXEL_WIDTH * LCD_PIXEL_HEIGHT); ulCount++)
         {
                 lcd_write_ram(0x0000);
         }
+}
+
+void lcd_set_cursor(uint16_t x_pos, uint16_t y_pos) {
+        /* Set the X address of the display cursor.*/
+        lcd_write_reg(SSD2119_X_RAM_ADDR_REG, x_pos);
+
+        /* Set the Y address of the display cursor.*/
+        lcd_write_reg(SSD2119_Y_RAM_ADDR_REG, y_pos);
+}
+
+void lcd_fill(uint16_t colour) {
+        uint32_t index = 0;
+        
+        // Zero the cursor and draw at every position
+        lcd_set_cursor(0x00, 0x00); 
+        lcd_write_ram_prepare();
+        for(index = 0; index < LCD_PIXEL_HEIGHT*LCD_PIXEL_WIDTH; index++)
+        {
+                LCD_DATA = colour;
+        }  
+}
+
+void lcd_draw_pixel(int16_t x, int16_t y, uint16_t colour) {
+        // If x or y are outside the accepted range, return
+        if( (x<0 || x>LCD_PIXEL_WIDTH-1) || (y<0 || y>LCD_PIXEL_HEIGHT-1) ) {
+                return; 
+        }
+        lcd_set_cursor(x, y);
+        lcd_write_ram_prepare();
+        lcd_write_ram(colour);
+}
+        
+void lcd_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
+
+}
+
+void LCD_DrawLine(uint16_t Xpos, uint16_t Ypos, uint16_t Length, uint8_t Direction)
+{
+  uint32_t i = 0;
+  
+  LCD_SetCursor(Xpos, Ypos);
+  if(Direction == LCD_DIR_HORIZONTAL)
+  {
+    LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+    for(i = 0; i < Length; i++)
+    {
+      LCD_WriteRAM(TextColor);
+    }
+  }
+  else
+  {
+    for(i = 0; i < Length; i++)
+    {
+      LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
+      LCD_WriteRAM(TextColor);
+      Ypos++;
+      LCD_SetCursor(Xpos, Ypos);
+    }
+  }
 }

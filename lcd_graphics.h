@@ -42,10 +42,14 @@
 #define SSD2119_Y_RAM_ADDR_REG        0x4F
 
 // Dimensions of the LCD panel.
-#define LCD_HEIGHT                    240
-#define LCD_WIDTH                     320
+#define LCD_PIXEL_WIDTH               320
+#define LCD_PIXEL_HEIGHT              240
+
 
 /* Public Functions **************************/
 void lcd_init(void);
+void lcd_set_cursor(uint16_t x_pos, uint16_t y_pos);
+void lcd_fill(uint16_t colour);
+void lcd_draw_pixel(int16_t x, int16_t y, uint16_t colour);
 
 #endif /* __STM32F4_DISCOVERY_LCD_H */
