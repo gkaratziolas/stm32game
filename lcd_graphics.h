@@ -41,16 +41,19 @@
 #define SSD2119_X_RAM_ADDR_REG        0x4E
 #define SSD2119_Y_RAM_ADDR_REG        0x4F
 
+#define ENTRY_MODE_DEFAULT 0x6830
+
 // Dimensions of the LCD panel.
 #define LCD_PIXEL_WIDTH               320
 #define LCD_PIXEL_HEIGHT              240
-
 
 /* Public Functions **************************/
 void lcd_init(void);
 void lcd_set_cursor(uint16_t x_pos, uint16_t y_pos);
 void lcd_fill(uint16_t colour);
 void lcd_draw_pixel(int16_t x, int16_t y, uint16_t colour);
-void lcd_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+uint16_t lcd_read_pixel(int16_t x, int16_t y);
+void lcd_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t colour);
+void lcd_draw_sprite(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, uint32_t* data);
 
 #endif /* __STM32F4_DISCOVERY_LCD_H */

@@ -4,7 +4,7 @@ STLINK=~/stlink/build/Release
 
 # Put your source files here (or *.c, etc)
 SRCS=main.c system_stm32f4xx.c stm32f4xx_it.c 
-SRCS += stm32f4_discovery_lcd.c fonts.c stm32f4_discovery.c
+SRCS += lcd_graphics.c fonts.c stm32f4_discovery.c mech.c
 SRCS += stm32f4xx_adc.c
 SRCS += stm32f4xx_can.c
 SRCS += stm32f4xx_crc.c
