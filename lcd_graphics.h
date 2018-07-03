@@ -51,5 +51,6 @@ void lcd_init(void);
 void lcd_set_cursor(uint16_t x_pos, uint16_t y_pos);
 void lcd_fill(uint16_t colour);
 void lcd_draw_pixel(int16_t x, int16_t y, uint16_t colour);
+void lcd_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 
 #endif /* __STM32F4_DISCOVERY_LCD_H */

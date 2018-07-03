@@ -276,30 +276,22 @@ void lcd_draw_pixel(int16_t x, int16_t y, uint16_t colour) {
 }
         
 void lcd_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
-
-}
-
-void LCD_DrawLine(uint16_t Xpos, uint16_t Ypos, uint16_t Length, uint8_t Direction)
-{
-  uint32_t i = 0;
-  
-  LCD_SetCursor(Xpos, Ypos);
-  if(Direction == LCD_DIR_HORIZONTAL)
-  {
-    LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
-    for(i = 0; i < Length; i++)
-    {
-      LCD_WriteRAM(TextColor);
-    }
-  }
-  else
-  {
-    for(i = 0; i < Length; i++)
-    {
-      LCD_WriteRAM_Prepare(); /* Prepare to write GRAM */
-      LCD_WriteRAM(TextColor);
-      Ypos++;
-      LCD_SetCursor(Xpos, Ypos);
-    }
-  }
+        int16_t dx=x1-x0;
+        int16_t dy=y1-y0;
+        int16_t x=x0;
+        int16_t y=y0;
+         
+        int16_t p = 2*dy - dx;
+         
+        while(x<x1) {
+                if(p >= 0) {
+                        lcd_draw_pixel(x, y, colour);
+                        y = y++;
+                        p = p + 2*dy - 2*dx;
+                } else {
+                        lcd_draw_pixel(x, y, colour);
+                        p = p + 2*dy;
+                }
+                x=x+1;
+        }
 }
