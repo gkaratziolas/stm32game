@@ -321,7 +321,7 @@ void lcd_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t 
         }
 }
 
-void lcd_draw_sprite(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, uint32_t* data) {
+void lcd_draw_sprite(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, uint16_t* data) {
         uint16_t x, y, i;
 
         for (y=0; y<height; y++) {

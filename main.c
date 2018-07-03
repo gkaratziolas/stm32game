@@ -85,7 +85,7 @@ int main(void)
                 i++;
                 i = i%6;
                 lcd_draw_sprite(100, 100, 32, 32, mech_data[i]);
-                for (dlycnt = 0; dlycnt < 1000000; dlycnt++);
+                for (dlycnt = 0; dlycnt < 2000000; dlycnt++);
         }
 
         while(1);
