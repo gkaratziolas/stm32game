@@ -258,8 +258,7 @@ void lcd_init(void) {
         /* clear the lcd  */
         unsigned long ulCount;
         lcd_write_reg(SSD2119_RAM_DATA_REG, 0x0000);
-        for(ulCount = 0; ulCount < (LCD_PIXEL_WIDTH * LCD_PIXEL_HEIGHT); ulCount++)
-        {
+        for (ulCount = 0; ulCount < (LCD_PIXEL_WIDTH * LCD_PIXEL_HEIGHT); ulCount++) {
                 lcd_write_ram(0x0000);
         }
 }
@@ -272,30 +271,14 @@ void lcd_set_cursor(uint16_t x_pos, uint16_t y_pos) {
         lcd_write_reg(SSD2119_Y_RAM_ADDR_REG, y_pos);
 }
 
-void lcd_rect_fill(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t colour) {
-        uint16_t x_min, x_max, y_min, y_max, x, y;
-        if (x0>x1) {
-                x_max = x0;
-                x_min = x1;
-        } else {
-                x_max = x1;
-                x_min = x0;                
-        }
-
-        if (y0>y1) {
-                y_max = y0;
-                y_min = y1;
-        } else {
-                y_max = y1;
-                y_min = y0;                
-        }
-
-        for(y=y_min; y<(y_max+1); y++) {
+void lcd_rect_fill(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, uint16_t colour) {
+        uint16_t y, x;
+        for (y=0; y<height; y++) {
                 // TODO: Shouldn't need to be done twice. Glitches observed without repeat (due to timing?)
                 lcd_set_cursor(x0, y0+y);
                 lcd_set_cursor(x0, y0+y);
                 lcd_write_ram_prepare();
-                for(x=x_min; x<(x_max+1); x++) {
+                for (x=0; x<width; x++) {
                         lcd_write_ram(colour);
                 }
         }
@@ -307,7 +290,7 @@ void lcd_fill(uint16_t colour) {
         // Zero the cursor and draw at every position
         lcd_set_cursor(0x00, 0x00); 
         lcd_write_ram_prepare();
-        for(index = 0; index < LCD_PIXEL_HEIGHT*LCD_PIXEL_WIDTH; index++)
+        for (index = 0; index < LCD_PIXEL_HEIGHT*LCD_PIXEL_WIDTH; index++)
         {
                 LCD_DATA = colour;
         }  
@@ -321,7 +304,7 @@ uint16_t lcd_read_pixel(int16_t x, int16_t y) {
 
 void lcd_draw_pixel(int16_t x, int16_t y, uint16_t colour) {
         // If x or y are outside the accepted range, return
-        if( (x<0 || x>LCD_PIXEL_WIDTH-1) || (y<0 || y>LCD_PIXEL_HEIGHT-1) ) {
+        if ( (x<0 || x>LCD_PIXEL_WIDTH-1) || (y<0 || y>LCD_PIXEL_HEIGHT-1) ) {
                 return; 
         }
         lcd_set_cursor(x, y);
@@ -337,7 +320,7 @@ void lcd_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t 
          
         int16_t p = 2*dy - dx;
          
-        while(x<x1) {
+        while (x<x1) {
                 if(p >= 0) {
                         lcd_draw_pixel(x, y, colour);
                         y++;
@@ -360,7 +343,15 @@ void lcd_draw_sprite(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, 
                 lcd_write_ram_prepare();
                 for (x=0; x<width; x++) {
                         i = y*width+x;
-                        lcd_write_ram((uint16_t)data[i]);
+                        if (data[i] != 0xffff) {
+                                lcd_write_ram((uint16_t)data[i]);
+                        } else {
+                                lcd_read_ram();
+                        }
                 }
         }
+}
+
+void lcd_draw_background(uint16_t* data) {
+        lcd_draw_sprite(0, 0, 100, 100, data);
 }
