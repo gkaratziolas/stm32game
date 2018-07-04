@@ -272,6 +272,35 @@ void lcd_set_cursor(uint16_t x_pos, uint16_t y_pos) {
         lcd_write_reg(SSD2119_Y_RAM_ADDR_REG, y_pos);
 }
 
+void lcd_rect_fill(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t colour) {
+        uint16_t x_min, x_max, y_min, y_max, x, y;
+        if (x0>x1) {
+                x_max = x0;
+                x_min = x1;
+        } else {
+                x_max = x1;
+                x_min = x0;                
+        }
+
+        if (y0>y1) {
+                y_max = y0;
+                y_min = y1;
+        } else {
+                y_max = y1;
+                y_min = y0;                
+        }
+
+        for(y=y_min; y<(y_max+1); y++) {
+                // TODO: Shouldn't need to be done twice. Glitches observed without repeat (due to timing?)
+                lcd_set_cursor(x0, y0+y);
+                lcd_set_cursor(x0, y0+y);
+                lcd_write_ram_prepare();
+                for(x=x_min; x<(x_max+1); x++) {
+                        lcd_write_ram(colour);
+                }
+        }
+}
+
 void lcd_fill(uint16_t colour) {
         uint32_t index = 0;
         
@@ -317,7 +346,7 @@ void lcd_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t 
                         lcd_draw_pixel(x, y, colour);
                         p = p + 2*dy;
                 }
-                x=x+1;
+                x++;
         }
 }
 
