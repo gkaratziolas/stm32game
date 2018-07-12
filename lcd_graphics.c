@@ -131,6 +131,13 @@ void lcd_gpio_config(void) {
 
         GPIO_Init(LCD_PWM_PORT, &GPIO_InitStructure);
         GPIO_SetBits(LCD_PWM_PORT, LCD_PWM_PIN);
+
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+        GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+        GPIO_Init(GPIOE, &GPIO_InitStructure);
 }
 
 void lcd_fsmc_config(void) {

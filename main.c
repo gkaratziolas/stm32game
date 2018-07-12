@@ -81,7 +81,6 @@ int main(void)
 
         //uint16_t data[16*16] = {0};
         int i = 0;
-        lcd_fill(0xffff);
 
         uint16_t x_pos = 0;
         uint8_t animation = 0;
@@ -89,12 +88,17 @@ int main(void)
                 i++;
                 animation = i%6;
                 x_pos = i%LCD_PIXEL_WIDTH;
-                lcd_rect_fill( x_pos, 100, 32, 32, 0xffff );
+                GPIO_SetBits(GPIOE, GPIO_Pin_0);
+                lcd_fill( 0xffff );
                 lcd_draw_sprite( x_pos, 100, 32, 32, mech_data[animation]);
-                //lcd_draw_sprite(  10, 130, 32, 32, mech_data[i]);
-                //lcd_draw_sprite( 230, 20,  32, 32, mech_data[i]);
-                //lcd_draw_sprite( 220, 50,  32, 32, mech_data[i]);
-                for (dlycnt = 0; dlycnt < 100000; dlycnt++);
+    
+                lcd_draw_sprite(  10, 130, 32, 32, mech_data[animation]);
+                lcd_draw_sprite( 230, 20,  32, 32, mech_data[animation]);
+                lcd_draw_sprite( 220, 50,  32, 32, mech_data[animation]);
+                for (dlycnt = 0; dlycnt < 50000; dlycnt++);
+                GPIO_ResetBits(GPIOE, GPIO_Pin_0);
+                for (dlycnt = 0; dlycnt < 500000; dlycnt++);
+    //GPIO_ResetBits(GPIOD, GPIO_Pin_12|GPIO_Pin_13);
         }
 
         while(1);

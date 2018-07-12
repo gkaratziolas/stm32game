@@ -41,7 +41,7 @@
 #define SSD2119_X_RAM_ADDR_REG        0x4E
 #define SSD2119_Y_RAM_ADDR_REG        0x4F
 
-#define ENTRY_MODE_DEFAULT 0x6830
+#define ENTRY_MODE_DEFAULT 0xE030
 
 // Dimensions of the LCD panel.
 #define LCD_PIXEL_WIDTH               320
