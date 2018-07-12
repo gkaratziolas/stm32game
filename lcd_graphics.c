@@ -1,5 +1,6 @@
 /* Includes **********************************/
 #include "stm32f4xx.h"
+#include "lcd_graphics.h"
 
 #define LCD_RST_PIN    (GPIO_Pin_3)
 #define LCD_RST_PORT   (GPIOD)
@@ -19,6 +20,7 @@ void lcd_write_reg(uint8_t reg, uint16_t value);
 uint16_t lcd_read_reg(uint8_t reg);
 void lcd_write_ram_prepare(void);
 void lcd_write_ram(uint16_t rgb_code);
+uint16_t lcd_read_ram(void);
 void lcd_gpio_config(void);
 void lcd_fsmc_config(void);
 
@@ -32,7 +34,7 @@ void lcd_write_reg(uint8_t reg, uint16_t value) {
 uint16_t lcd_read_reg(uint8_t reg) {
         // Write 16-bit Index, then Read Reg
         LCD_CMD = reg;
-        return (LCD_Data);
+        return (LCD_DATA);
 }
 
 void lcd_write_ram_prepare(void) {
@@ -41,7 +43,21 @@ void lcd_write_ram_prepare(void) {
 
 void lcd_write_ram(uint16_t rgb_code) {
         // Write 16-bit GRAM Reg
-        LCD_Data = rgbcode;
+        LCD_DATA = rgb_code;
+}
+
+uint16_t lcd_read_ram(void) {
+        /* Read 16-bit Reg */
+        return LCD_DATA;
+}
+
+void _delay_(int ms)
+{
+   while (ms-- > 0) {
+      volatile int x=59710;
+      while (x-- > 0)
+         __asm("nop");
+   }
 }
 
 void lcd_gpio_config(void) {
@@ -52,6 +68,9 @@ void lcd_gpio_config(void) {
                                RCC_AHB1Periph_GPIOD |
                                RCC_AHB1Periph_GPIOE |
                                RCC_AHB1Periph_GPIOF, ENABLE);
+
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0  | GPIO_Pin_1 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_14 |
+                                      GPIO_Pin_15 | GPIO_Pin_4 | GPIO_Pin_5;
 
         GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -164,8 +183,6 @@ void lcd_fsmc_config(void) {
 
 
 void lcd_init(void) {
-        unsigned long ulCount;
-
         /* Configure the LCD Control pins */
         lcd_gpio_config();
         
@@ -239,9 +256,102 @@ void lcd_init(void) {
         lcd_write_reg(SSD2119_Y_RAM_ADDR_REG, 0x00);
   
         /* clear the lcd  */
+        unsigned long ulCount;
         lcd_write_reg(SSD2119_RAM_DATA_REG, 0x0000);
-        for(ulCount = 0; ulCount < (LCD_PIXEL_WIDTH * LCD_PIXEL_HEIGHT); ulCount++)
-        {
+        for (ulCount = 0; ulCount < (LCD_PIXEL_WIDTH * LCD_PIXEL_HEIGHT); ulCount++) {
                 lcd_write_ram(0x0000);
         }
+}
+
+void lcd_set_cursor(uint16_t x_pos, uint16_t y_pos) {
+        /* Set the X address of the display cursor.*/
+        lcd_write_reg(SSD2119_X_RAM_ADDR_REG, x_pos);
+
+        /* Set the Y address of the display cursor.*/
+        lcd_write_reg(SSD2119_Y_RAM_ADDR_REG, y_pos);
+}
+
+void lcd_rect_fill(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, uint16_t colour) {
+        uint16_t y, x;
+        for (y=0; y<height; y++) {
+                // TODO: Shouldn't need to be done twice. Glitches observed without repeat (due to timing?)
+                lcd_set_cursor(x0, y0+y);
+                lcd_set_cursor(x0, y0+y);
+                lcd_write_ram_prepare();
+                for (x=0; x<width; x++) {
+                        lcd_write_ram(colour);
+                }
+        }
+}
+
+void lcd_fill(uint16_t colour) {
+        uint32_t index = 0;
+        
+        // Zero the cursor and draw at every position
+        lcd_set_cursor(0x00, 0x00); 
+        lcd_write_ram_prepare();
+        for (index = 0; index < LCD_PIXEL_HEIGHT*LCD_PIXEL_WIDTH; index++)
+        {
+                LCD_DATA = colour;
+        }  
+}
+
+uint16_t lcd_read_pixel(int16_t x, int16_t y) {
+        lcd_set_cursor(x, y);
+        lcd_write_ram_prepare();
+        return lcd_read_ram();
+}
+
+void lcd_draw_pixel(int16_t x, int16_t y, uint16_t colour) {
+        // If x or y are outside the accepted range, return
+        if ( (x<0 || x>LCD_PIXEL_WIDTH-1) || (y<0 || y>LCD_PIXEL_HEIGHT-1) ) {
+                return; 
+        }
+        lcd_set_cursor(x, y);
+        lcd_write_ram_prepare();
+        lcd_write_ram(colour);
+}
+        
+void lcd_draw_line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t colour) {
+        int16_t dx=x1-x0;
+        int16_t dy=y1-y0;
+        int16_t x=x0;
+        int16_t y=y0;
+         
+        int16_t p = 2*dy - dx;
+         
+        while (x<x1) {
+                if(p >= 0) {
+                        lcd_draw_pixel(x, y, colour);
+                        y++;
+                        p = p + 2*dy - 2*dx;
+                } else {
+                        lcd_draw_pixel(x, y, colour);
+                        p = p + 2*dy;
+                }
+                x++;
+        }
+}
+
+void lcd_draw_sprite(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, uint16_t* data) {
+        uint16_t x, y, i;
+
+        for (y=0; y<height; y++) {
+                // TODO: Shouldn't need to be done twice. Glitches observed without repeat (due to timing?)
+                lcd_set_cursor(x0, y0+y);
+                lcd_set_cursor(x0, y0+y);
+                lcd_write_ram_prepare();
+                for (x=0; x<width; x++) {
+                        i = y*width+x;
+                        if (data[i] != 0xffff) {
+                                lcd_write_ram((uint16_t)data[i]);
+                        } else {
+                                lcd_read_ram();
+                        }
+                }
+        }
+}
+
+void lcd_draw_background(uint16_t* data) {
+        lcd_draw_sprite(0, 0, 100, 100, data);
 }

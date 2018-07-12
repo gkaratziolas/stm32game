@@ -20,9 +20,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdio.h>
+#include "mech.h"
 #include "stm32f4xx.h"
 #include "stm32f4_discovery.h"
-#include "stm32f4_discovery_lcd.h"
+#include "lcd_graphics.h"
 
 /** @addtogroup STM32F4xx_StdPeriph_Examples
   * @{
@@ -63,23 +64,68 @@ int main(void)
         /* wait the power stable */
         for (dlycnt = 0; dlycnt < 10000000; dlycnt++);
 
-        STM32f4_Discovery_LCD_Init();
+        lcd_init();
 
         /* Display message on stm32f4_discovery LCD **********************************/
         /* Clear the LCD */ 
-        LCD_Clear(LCD_COLOR_BLACK);
+        lcd_fill(0x0001);
+
+        int16_t colour = 0;
+        int32_t y, x;
+        for (y=0; y<LCD_PIXEL_HEIGHT; y++) {
+                for (x=0; x<LCD_PIXEL_WIDTH; x++) {
+                        colour = (0x20*(x + y)) / (LCD_PIXEL_HEIGHT + LCD_PIXEL_WIDTH)<<5;
+                        lcd_draw_pixel(x, y, colour);
+                }
+        }
+
+        //uint16_t data[16*16] = {0};
+        int i = 0;
+        lcd_fill(0xffff);
 
         uint16_t x_pos = 0;
-        uint16_t y_pos = 0;
-        uint8_t width  = 10;
-        uint8_t height = 10;
-
-        while(1) {                
-                x_pos++;
-                y_pos++;
-                LCD_DrawFullRect(x_pos, y_pos, width, height);
-                for (dlycnt = 0; dlycnt < 500000; dlycnt++);
+        uint8_t animation = 0;
+        while(1) {
+                i++;
+                animation = i%6;
+                x_pos = i%LCD_PIXEL_WIDTH;
+                lcd_rect_fill( x_pos, 100, 32, 32, 0xffff );
+                lcd_draw_sprite( x_pos, 100, 32, 32, mech_data[animation]);
+                //lcd_draw_sprite(  10, 130, 32, 32, mech_data[i]);
+                //lcd_draw_sprite( 230, 20,  32, 32, mech_data[i]);
+                //lcd_draw_sprite( 220, 50,  32, 32, mech_data[i]);
+                for (dlycnt = 0; dlycnt < 100000; dlycnt++);
         }
+
+        while(1);
+
+        x = 0;
+        y = 0;
+        int16_t dx = 3;
+        int16_t dy = 2;
+        while(1) {
+                colour += lcd_read_pixel(x,y);
+                lcd_draw_pixel(x, y, colour);
+                x+=dx;
+                y+=dy;
+                if (x < 0) {
+                        x  = 0;
+                        dx = 3;
+                } else if (x >= LCD_PIXEL_WIDTH) {
+                        x = LCD_PIXEL_WIDTH-1;
+                        dx = -3;
+                }
+
+                if (y < 0) {
+                        y  = 0;
+                        dy = 2;
+                } else if (y >= LCD_PIXEL_HEIGHT) {
+                        y = LCD_PIXEL_HEIGHT-1;
+                        dy = -2;
+                }
+        }
+
+        //lcd_draw_line(0, 0, 100, 100, 0xff);
 
         /* LCD RGB Test */
         //LCD_RGB_Test();
